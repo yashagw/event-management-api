@@ -1,0 +1,106 @@
+GUEST ROLE
+- List all events (GET) with pagination and sorting. 
+(Lator - Add filtering 
+	based on status - ongoing, upcoming or past
+	like show all 1 day or 2 day or ongoing
+	like show all events in a particular month
+	like show all events in a particular city
+	like show all events in a particular city in a particular month
+	like show all events with atleast 5 tickets left
+)
+- Search events (GET) by name, description, location
+- View an event (GET) with all details (name, description, location, date, ticket left, etc)
+
+USER ROLE
+- All GUEST ROLE actions
+- Buy tickets for an event (POST)
+(Can buy multiple tickets at once, cannot buy tickets for ongoing events)
+- Request a refund for a ticket (POST) 
+(Lator - depend on the event host if they want to allow refunds or not)
+- View all tickets bought with sorting and pagination (GET)
+- Search tickets by event name, location
+- Request to became a host (POST)
+(If the request is denied, the user will not be able to request again for 30 days)
+
+HOST ROLE
+- All USER ROLE actions
+- Create an event (POST)
+- Update an event (PUT) 
+(Can update description any time, but can only update name, location, date, etc. if no tickets have been sold yet)
+- Delete an event (DELETE)
+(Can only delete if no tickets have been sold yet)
+- View all events created (GET) with pagination and sorting
+(Lator - filtering based on location and date, status, is ongoing or not)
+- Search events by name, description, location, date, etc.
+- View all tickets sold for an event (GET) with pagination and sorting 
+
+Lator -
+Each Host Request will be assign to a Moderator.
+
+Q - How to decide which Moderator will be assigned to an Host Request?
+A - Assign the Host Request to the Moderator with the least number of host request assigned.
+
+Q - How to figure out which Moderator has the least number of host request assigned? 
+A - Find all the host requests with status IN REVIEW and then find the moderator_id with the least number of host request assigned.
+
+MODERATOR ROLE
+- View requests to became a host (GET) with pagination and sorting
+- Approve or reject a request (PUT)
+
+ADMIN roles
+- All MODERATOR ROLE actions
+- Create a moderator (POST)
+
+Users -:
+	- id
+	- email
+	- password
+	- role (user, host, moderator)
+	- created_at
+	- password_updated_at
+
+Events -:
+	- id
+	- host_id (FK to users table)
+	- name
+	- description
+	- location
+	- total_tickets
+	- tickets_left
+	- start_date
+	- end_date
+	- status (in review, rejected, approved, ongoing, past)
+	- created_at
+
+Tickets -:
+	- id
+	- user_id
+	- event_id
+	- quantity
+	- created_at
+
+User_Host_Request -:
+	- id
+	- user_id (FK to users table)
+	- moderator_id (FK to users table)
+	- status (in review, rejected, approved, expired)
+	- created_at
+If rejected, user will not be able to request again for 30 days.
+Every row will get deleted from the User_Host_Request table after 30 days if rejected.
+Maybe not delete it, just change the status to expired.
+
+Became a Host -:
+Check if the user is already a host or not.
+If already a host, return error.
+Check if the user has already requested to became a host or not and request is in review.
+return in review error.
+Check if the user has already requested to became a host or not and request is rejected.
+return cannot request again for 30 days error.
+Create a new row in the User_Host_Request table with status in review and user_id.
+
+Approve or reject a host request -:
+Check if the user is a moderator or not.
+If not a moderator, return error.
+Request should be in review stage.
+If approved, change the role of the user to host and change the status of the row to approved.
+If rejected, change the status of the row to rejected
