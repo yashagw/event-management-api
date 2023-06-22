@@ -1,13 +1,16 @@
 package api
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -23,6 +26,123 @@ func randomUserHostRequest(t *testing.T, user *model.User, status model.UserHost
 	}
 
 	return res
+}
+
+func TestApproveDisapproveUserHostRequest(t *testing.T) {
+	moderator, _ := randomUser(t)
+	moderator.Role = model.UserRole_Moderator
+
+	user, _ := randomUser(t)
+
+	testCases := []struct {
+		name          string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(provider *mockdb.MockProvider)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "Approve Okay",
+			body: gin.H{
+				"approved":   true,
+				"request_id": 1,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, moderator.Email, time.Minute)
+			},
+			buildStubs: func(provider *mockdb.MockProvider) {
+				arg := model.ApproveDisapproveRequestToBecomeHostParams{
+					RequestID:   1,
+					Approved:    true,
+					ModeratorID: moderator.ID,
+				}
+
+				provider.EXPECT().GetUserByEmail(gomock.Any(), moderator.Email).Times(1).Return(&moderator, nil)
+				provider.EXPECT().ApproveDisapproveRequestToBecomeHost(gomock.Any(), gomock.Eq(arg)).Times(1).Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "Reject Okay",
+			body: gin.H{
+				"approved":   false,
+				"request_id": 1,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, moderator.Email, time.Minute)
+			},
+			buildStubs: func(provider *mockdb.MockProvider) {
+				arg := model.ApproveDisapproveRequestToBecomeHostParams{
+					RequestID:   1,
+					Approved:    false,
+					ModeratorID: moderator.ID,
+				}
+
+				provider.EXPECT().GetUserByEmail(gomock.Any(), moderator.Email).Times(1).Return(&moderator, nil)
+				provider.EXPECT().ApproveDisapproveRequestToBecomeHost(gomock.Any(), gomock.Eq(arg)).Times(1).Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "Unauthorized",
+			body: gin.H{
+				"approved":   true,
+				"request_id": 1,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				// Don't add authorization header
+			},
+			buildStubs: func(provider *mockdb.MockProvider) {
+				// Don't expect any calls to the database
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name: "Unauthorized Not Moderator",
+			body: gin.H{
+				"approved":   true,
+				"request_id": 1,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
+			},
+			buildStubs: func(provider *mockdb.MockProvider) {
+				provider.EXPECT().GetUserByEmail(gomock.Any(), user.Email).Times(1).Return(&user, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			provider := mockdb.NewMockProvider(ctrl)
+			tc.buildStubs(provider)
+
+			server := newTestServer(t, provider)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			request, err := http.NewRequest(http.MethodPost, "/moderator/requests/", bytes.NewReader(data))
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
 }
 
 func TestListPendingUserHostRequests(t *testing.T) {

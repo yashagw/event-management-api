@@ -57,3 +57,9 @@ type ListPendingRequestsResponse struct {
 	Records    []*UserHostRequest `json:"records"`
 	NextOffset int                `json:"next_offset"`
 }
+
+type ApproveDisapproveRequestToBecomeHostParams struct {
+	Approved    bool  `json:"approved"`
+	RequestID   int64 `json:"request_id"`
+	ModeratorID int64 `json:"moderator_id"`
+}

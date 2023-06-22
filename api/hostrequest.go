@@ -75,6 +75,7 @@ func (server *Server) ListPendingUserHostRequests(context *gin.Context) {
 		return
 	}
 
+	// Listing pending requests
 	var req ListPendingUserHostRequestsParams
 	if err := context.ShouldBindQuery(&req); err != nil {
 		context.JSON(http.StatusBadRequest, errorResponse(err))
@@ -91,4 +92,50 @@ func (server *Server) ListPendingUserHostRequests(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response)
+}
+
+type ApproveDisapproveUserHostRequestParams struct {
+	Approved  bool  `json:"approved"`
+	RequestID int64 `json:"request_id"`
+}
+
+func (server *Server) ApproveDisapproveUserHostRequest(context *gin.Context) {
+	// Authorization to make sure payload have user role
+	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
+	userEmail := payload.Username
+
+	user, err := server.provider.GetUserByEmail(context, userEmail)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+			return
+		}
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Only admin and moderator can approve requests
+	if user.Role == model.UserRole_User || user.Role == model.UserRole_Host {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+		return
+	}
+
+	var req ApproveDisapproveUserHostRequestParams
+	if err := context.ShouldBindJSON(&req); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	dbReq := model.ApproveDisapproveRequestToBecomeHostParams{
+		RequestID:   req.RequestID,
+		Approved:    req.Approved,
+		ModeratorID: user.ID,
+	}
+	err = server.provider.ApproveDisapproveRequestToBecomeHost(context, dbReq)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"message": "request processed"})
 }

@@ -16,6 +16,7 @@ type UserQuerier interface {
 	GetRequestToBecomeHost(context context.Context, userID int64) (*model.UserHostRequest, error)
 	DeleteRequestToBecomeHost(context context.Context, id int64) error
 	ListPendingRequests(context context.Context, request model.ListPendingRequestsParams) (*model.ListPendingRequestsResponse, error)
+	ApproveDisapproveRequestToBecomeHost(context context.Context, request model.ApproveDisapproveRequestToBecomeHostParams) error
 }
 
 type EventQuerier interface {

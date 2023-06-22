@@ -2,6 +2,7 @@ package pgsql
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -85,4 +86,61 @@ func TestListPendingRequests(t *testing.T) {
 	require.Equal(t, res1.Records[0].ID, res3.Records[0].ID)
 	require.Equal(t, res2.Records[0].ID, res3.Records[1].ID)
 	require.Equal(t, 2, res3.NextOffset)
+}
+
+func TestApproveDisapproveRequestToBecomeHost(t *testing.T) {
+	user := CreateRandomUser(t)
+	request, err := provider.CreateRequestToBecomeHost(context.Background(), user.ID)
+	require.NoError(t, err)
+	defer func() {
+		err = provider.DeleteRequestToBecomeHost(context.Background(), request.ID)
+		require.NoError(t, err)
+
+		err = provider.DeleteUser(context.Background(), user.ID)
+		require.NoError(t, err)
+	}()
+
+	moderatorId := CreateRandomUser(t).ID
+	err = provider.ApproveDisapproveRequestToBecomeHost(context.Background(), model.ApproveDisapproveRequestToBecomeHostParams{
+		Approved:    true,
+		RequestID:   request.ID,
+		ModeratorID: moderatorId,
+	})
+	require.NoError(t, err)
+
+	r, err := provider.GetRequestToBecomeHost(context.Background(), user.ID)
+	require.NoError(t, err)
+	require.Equal(t, model.UserHostRequestStatus_Approved, r.Status)
+	require.Equal(t, sql.NullInt64{Int64: moderatorId, Valid: true}, r.ModeratorID)
+
+	u1, err := provider.GetUserByEmail(context.Background(), user.Email)
+	require.NoError(t, err)
+	require.Equal(t, model.UserRole_Host, u1.Role)
+
+	user2 := CreateRandomUser(t)
+	request2, err := provider.CreateRequestToBecomeHost(context.Background(), user2.ID)
+	require.NoError(t, err)
+	defer func() {
+		err = provider.DeleteRequestToBecomeHost(context.Background(), request2.ID)
+		require.NoError(t, err)
+
+		err = provider.DeleteUser(context.Background(), user2.ID)
+		require.NoError(t, err)
+	}()
+
+	err = provider.ApproveDisapproveRequestToBecomeHost(context.Background(), model.ApproveDisapproveRequestToBecomeHostParams{
+		Approved:    false,
+		RequestID:   request2.ID,
+		ModeratorID: moderatorId,
+	})
+	require.NoError(t, err)
+
+	r, err = provider.GetRequestToBecomeHost(context.Background(), user2.ID)
+	require.NoError(t, err)
+	require.Equal(t, model.UserHostRequestStatus_Rejected, r.Status)
+	require.Equal(t, sql.NullInt64{Int64: 0, Valid: false}, r.ModeratorID)
+
+	u2, err := provider.GetUserByEmail(context.Background(), user2.Email)
+	require.NoError(t, err)
+	require.Equal(t, model.UserRole_User, u2.Role)
 }

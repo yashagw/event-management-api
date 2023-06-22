@@ -45,6 +45,7 @@ func (server *Server) setupRouter() {
 
 	moderatorAuthRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	moderatorAuthRoutes.GET("/moderator/requests", server.ListPendingUserHostRequests)
+	moderatorAuthRoutes.POST("/moderator/requests/", server.ApproveDisapproveUserHostRequest)
 
 	server.router = router
 }

@@ -2,6 +2,7 @@ package pgsql
 
 import (
 	"context"
+	"time"
 
 	"github.com/yashagw/event-management-api/db/model"
 )
@@ -98,4 +99,49 @@ func (p *Provider) DeleteRequestToBecomeHost(context context.Context, id int64) 
 		DELETE FROM user_host_requests WHERE id = $1
 		`, id)
 	return err
+}
+
+func (p *Provider) ApproveDisapproveRequestToBecomeHost(context context.Context, request model.ApproveDisapproveRequestToBecomeHostParams) error {
+	txProvider, err := p.BeginTx(context, nil)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			txProvider.tx.Rollback()
+		}
+	}()
+
+	if request.Approved {
+		var userID int64
+
+		err := txProvider.tx.QueryRowContext(context, `
+			UPDATE user_host_requests SET status = $1, moderator_id = $2, updated_at = $3 WHERE id = $4
+			RETURNING user_id
+		`, model.UserHostRequestStatus_Approved, request.ModeratorID, time.Now(), request.RequestID).Scan(&userID)
+		if err != nil {
+			return err
+		}
+
+		_, err = txProvider.tx.ExecContext(context, `
+			UPDATE users SET role = $1 WHERE id = $2
+			`, model.UserRole_Host, userID)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		_, err = txProvider.tx.ExecContext(context, `
+			UPDATE user_host_requests SET status = $1 WHERE id = $2
+			`, model.UserHostRequestStatus_Rejected, request.RequestID)
+	}
+
+	if err := txProvider.tx.Commit(); err != nil {
+		return err
+	}
+
+	txProvider.Close()
+
+	return nil
 }

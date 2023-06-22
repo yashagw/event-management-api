@@ -36,6 +36,20 @@ func (m *MockProvider) EXPECT() *MockProviderMockRecorder {
 	return m.recorder
 }
 
+// ApproveDisapproveRequestToBecomeHost mocks base method.
+func (m *MockProvider) ApproveDisapproveRequestToBecomeHost(arg0 context.Context, arg1 model.ApproveDisapproveRequestToBecomeHostParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApproveDisapproveRequestToBecomeHost", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApproveDisapproveRequestToBecomeHost indicates an expected call of ApproveDisapproveRequestToBecomeHost.
+func (mr *MockProviderMockRecorder) ApproveDisapproveRequestToBecomeHost(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApproveDisapproveRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).ApproveDisapproveRequestToBecomeHost), arg0, arg1)
+}
+
 // Close mocks base method.
 func (m *MockProvider) Close() error {
 	m.ctrl.T.Helper()
