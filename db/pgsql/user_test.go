@@ -32,11 +32,19 @@ func CreateRandomUser(t *testing.T) *model.User {
 }
 
 func TestCreateUser(t *testing.T) {
-	CreateRandomUser(t)
+	user := CreateRandomUser(t)
+	defer func() {
+		err := provider.DeleteUser(context.Background(), user.ID)
+		require.NoError(t, err)
+	}()
 }
 
 func TestGetUserByEmail(t *testing.T) {
 	userResponse := CreateRandomUser(t)
+	defer func() {
+		err := provider.DeleteUser(context.Background(), userResponse.ID)
+		require.NoError(t, err)
+	}()
 
 	userResponse2, err := provider.GetUserByEmail(context.Background(), userResponse.Email)
 	require.NoError(t, err)

@@ -53,3 +53,12 @@ func (p *Provider) GetUserByEmail(context context.Context, email string) (*model
 
 	return user, nil
 }
+
+func (p *Provider) DeleteUser(context context.Context, id int64) error {
+	_, err := p.conn.ExecContext(context, `
+		DELETE FROM users
+		WHERE id = $1
+	`, id)
+
+	return err
+}

@@ -51,11 +51,12 @@ func (mr *MockProviderMockRecorder) Close() *gomock.Call {
 }
 
 // CreateRequestToBecomeHost mocks base method.
-func (m *MockProvider) CreateRequestToBecomeHost(arg0 context.Context, arg1 int64) error {
+func (m *MockProvider) CreateRequestToBecomeHost(arg0 context.Context, arg1 int64) (*model.UserHostRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRequestToBecomeHost", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*model.UserHostRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateRequestToBecomeHost indicates an expected call of CreateRequestToBecomeHost.
@@ -93,6 +94,34 @@ func (mr *MockProviderMockRecorder) DB() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DB", reflect.TypeOf((*MockProvider)(nil).DB))
 }
 
+// DeleteRequestToBecomeHost mocks base method.
+func (m *MockProvider) DeleteRequestToBecomeHost(arg0 context.Context, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRequestToBecomeHost", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRequestToBecomeHost indicates an expected call of DeleteRequestToBecomeHost.
+func (mr *MockProviderMockRecorder) DeleteRequestToBecomeHost(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).DeleteRequestToBecomeHost), arg0, arg1)
+}
+
+// DeleteUser mocks base method.
+func (m *MockProvider) DeleteUser(arg0 context.Context, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser.
+func (mr *MockProviderMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockProvider)(nil).DeleteUser), arg0, arg1)
+}
+
 // GetRequestToBecomeHost mocks base method.
 func (m *MockProvider) GetRequestToBecomeHost(arg0 context.Context, arg1 int64) (*model.UserHostRequest, error) {
 	m.ctrl.T.Helper()
@@ -121,6 +150,21 @@ func (m *MockProvider) GetUserByEmail(arg0 context.Context, arg1 string) (*model
 func (mr *MockProviderMockRecorder) GetUserByEmail(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockProvider)(nil).GetUserByEmail), arg0, arg1)
+}
+
+// ListPendingRequests mocks base method.
+func (m *MockProvider) ListPendingRequests(arg0 context.Context, arg1 model.ListPendingRequestsParams) (*model.ListPendingRequestsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPendingRequests", arg0, arg1)
+	ret0, _ := ret[0].(*model.ListPendingRequestsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPendingRequests indicates an expected call of ListPendingRequests.
+func (mr *MockProviderMockRecorder) ListPendingRequests(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPendingRequests", reflect.TypeOf((*MockProvider)(nil).ListPendingRequests), arg0, arg1)
 }
 
 // Tx mocks base method.
