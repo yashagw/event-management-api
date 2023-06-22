@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
+	defer conn.Close()
 
 	provider, err := db.New(conn)
 	if err != nil {

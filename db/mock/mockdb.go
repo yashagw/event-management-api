@@ -50,6 +50,20 @@ func (mr *MockProviderMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockProvider)(nil).Close))
 }
 
+// CreateRequestToBecomeHost mocks base method.
+func (m *MockProvider) CreateRequestToBecomeHost(arg0 context.Context, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRequestToBecomeHost", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateRequestToBecomeHost indicates an expected call of CreateRequestToBecomeHost.
+func (mr *MockProviderMockRecorder) CreateRequestToBecomeHost(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).CreateRequestToBecomeHost), arg0, arg1)
+}
+
 // CreateUser mocks base method.
 func (m *MockProvider) CreateUser(arg0 context.Context, arg1 model.CreateUserParams) (*model.User, error) {
 	m.ctrl.T.Helper()
@@ -77,6 +91,21 @@ func (m *MockProvider) DB() *sql.DB {
 func (mr *MockProviderMockRecorder) DB() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DB", reflect.TypeOf((*MockProvider)(nil).DB))
+}
+
+// GetRequestToBecomeHost mocks base method.
+func (m *MockProvider) GetRequestToBecomeHost(arg0 context.Context, arg1 int64) (*model.UserHostRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRequestToBecomeHost", arg0, arg1)
+	ret0, _ := ret[0].(*model.UserHostRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRequestToBecomeHost indicates an expected call of GetRequestToBecomeHost.
+func (mr *MockProviderMockRecorder) GetRequestToBecomeHost(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).GetRequestToBecomeHost), arg0, arg1)
 }
 
 // GetUserByEmail mocks base method.

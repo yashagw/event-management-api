@@ -40,11 +40,8 @@ func (server *Server) setupRouter() {
 	router.POST("/users", server.CreateUser)
 	router.POST("/users/login", server.LoginUser)
 
-	// authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
-
-	// authRoutes.POST("/roles", server.createRole)
-	// authRoutes.GET("/roles/:id", server.getRole)
-	// authRoutes.GET("/roles", server.listRoles)
+	userAuthRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	userAuthRoutes.POST("/users/become-host", server.BecomeHost)
 
 	server.router = router
 }

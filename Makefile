@@ -27,5 +27,15 @@ mock:
 migratefile:
 	migrate create -ext sql -dir db/migration -seq db_seq
 
+create_admin:
+	go build -o ./bin/create_admin ./scripts/create_admin.go
+	chmod +x ./bin/create_admin
+	./bin/create_admin
+
 server:
 	go run main.go
+
+sql:
+	make dropdb
+	make createdb
+	make migrateup
