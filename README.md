@@ -27,8 +27,6 @@ In addition to the actions available to Guests, Users have additional functional
 
 - **Buy Tickets (POST):** Purchase tickets for an event. Users can buy multiple tickets at once, but they cannot buy tickets for ongoing events.
 
-- **Request Ticket Refund (POST):** Request a refund for a purchased ticket. Note that refund policies are determined by the event host.
-
 - **View Bought Tickets (GET):** Retrieve a list of all purchased tickets with pagination and sorting options.
 
 - **Search Tickets (GET):** Search for tickets by event name or location.
