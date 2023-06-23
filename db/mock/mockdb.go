@@ -94,6 +94,21 @@ func (mr *MockProviderMockRecorder) CreateRequestToBecomeHost(arg0, arg1 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).CreateRequestToBecomeHost), arg0, arg1)
 }
 
+// CreateTicket mocks base method.
+func (m *MockProvider) CreateTicket(arg0 context.Context, arg1 model.CreateTicketParams) (*model.Ticket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTicket", arg0, arg1)
+	ret0, _ := ret[0].(*model.Ticket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTicket indicates an expected call of CreateTicket.
+func (mr *MockProviderMockRecorder) CreateTicket(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTicket", reflect.TypeOf((*MockProvider)(nil).CreateTicket), arg0, arg1)
+}
+
 // CreateUser mocks base method.
 func (m *MockProvider) CreateUser(arg0 context.Context, arg1 model.CreateUserParams) (*model.User, error) {
 	m.ctrl.T.Helper()
@@ -151,6 +166,20 @@ func (mr *MockProviderMockRecorder) DeleteRequestToBecomeHost(arg0, arg1 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).DeleteRequestToBecomeHost), arg0, arg1)
 }
 
+// DeleteTicket mocks base method.
+func (m *MockProvider) DeleteTicket(arg0 context.Context, arg1 model.DeleteTicketParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTicket", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTicket indicates an expected call of DeleteTicket.
+func (mr *MockProviderMockRecorder) DeleteTicket(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTicket", reflect.TypeOf((*MockProvider)(nil).DeleteTicket), arg0, arg1)
+}
+
 // DeleteUser mocks base method.
 func (m *MockProvider) DeleteUser(arg0 context.Context, arg1 int64) error {
 	m.ctrl.T.Helper()
@@ -193,6 +222,21 @@ func (m *MockProvider) GetRequestToBecomeHost(arg0 context.Context, arg1 int64) 
 func (mr *MockProviderMockRecorder) GetRequestToBecomeHost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRequestToBecomeHost", reflect.TypeOf((*MockProvider)(nil).GetRequestToBecomeHost), arg0, arg1)
+}
+
+// GetTicket mocks base method.
+func (m *MockProvider) GetTicket(arg0 context.Context, arg1 model.GetTicketParams) (*model.Ticket, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTicket", arg0, arg1)
+	ret0, _ := ret[0].(*model.Ticket)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTicket indicates an expected call of GetTicket.
+func (mr *MockProviderMockRecorder) GetTicket(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTicket", reflect.TypeOf((*MockProvider)(nil).GetTicket), arg0, arg1)
 }
 
 // GetUserByEmail mocks base method.

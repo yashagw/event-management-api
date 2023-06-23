@@ -26,7 +26,14 @@ type EventQuerier interface {
 	DeleteEvent(context context.Context, id int64) error
 }
 
+type TicketQuerier interface {
+	CreateTicket(context context.Context, request model.CreateTicketParams) (*model.Ticket, error)
+	GetTicket(context context.Context, request model.GetTicketParams) (*model.Ticket, error)
+	DeleteTicket(context context.Context, request model.DeleteTicketParams) error
+}
+
 type DBQuerier interface {
 	UserQuerier
 	EventQuerier
+	TicketQuerier
 }

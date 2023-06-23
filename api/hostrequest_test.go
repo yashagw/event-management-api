@@ -369,7 +369,7 @@ func TestBecomeHostRequest(t *testing.T) {
 			server := newTestServer(t, provider)
 			recorder := httptest.NewRecorder()
 
-			request, err := http.NewRequest(http.MethodPost, "/users/become-host", nil)
+			request, err := http.NewRequest(http.MethodPost, "/users/host", nil)
 			require.NoError(t, err)
 
 			tc.setupAuth(t, request, server.tokenMaker)

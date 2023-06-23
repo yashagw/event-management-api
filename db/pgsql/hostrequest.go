@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/yashagw/event-management-api/db/model"
 )
 
@@ -101,8 +102,9 @@ func (p *Provider) DeleteRequestToBecomeHost(context context.Context, id int64) 
 	return err
 }
 
-func (p *Provider) ApproveDisapproveRequestToBecomeHost(context context.Context, request model.ApproveDisapproveRequestToBecomeHostParams) error {
-	txProvider, err := p.BeginTx(context, nil)
+func (p *Provider) ApproveDisapproveRequestToBecomeHost(ctx context.Context, request model.ApproveDisapproveRequestToBecomeHostParams) error {
+	// Begin a transaction
+	txProvider, err := p.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -111,12 +113,26 @@ func (p *Provider) ApproveDisapproveRequestToBecomeHost(context context.Context,
 		if err != nil {
 			txProvider.tx.Rollback()
 		}
+		txProvider.Close()
 	}()
+
+	// Check if the status of the request is still pending and lock the row
+	var requestStatus model.UserHostRequestStatus
+	err = txProvider.tx.QueryRowContext(ctx, `
+		SELECT status FROM user_host_requests WHERE id = $1 FOR UPDATE
+	`, request.RequestID).Scan(&requestStatus)
+	if err != nil {
+		return err
+	}
+
+	if requestStatus != model.UserHostRequestStatus_Pending {
+		return errors.New("the request status is no longer pending")
+	}
 
 	if request.Approved {
 		var userID int64
 
-		err := txProvider.tx.QueryRowContext(context, `
+		err := txProvider.tx.QueryRowContext(ctx, `
 			UPDATE user_host_requests SET status = $1, moderator_id = $2, updated_at = $3 WHERE id = $4
 			RETURNING user_id
 		`, model.UserHostRequestStatus_Approved, request.ModeratorID, time.Now(), request.RequestID).Scan(&userID)
@@ -124,7 +140,7 @@ func (p *Provider) ApproveDisapproveRequestToBecomeHost(context context.Context,
 			return err
 		}
 
-		_, err = txProvider.tx.ExecContext(context, `
+		_, err = txProvider.tx.ExecContext(ctx, `
 			UPDATE users SET role = $1 WHERE id = $2
 			`, model.UserRole_Host, userID)
 		if err != nil {
@@ -132,16 +148,15 @@ func (p *Provider) ApproveDisapproveRequestToBecomeHost(context context.Context,
 		}
 
 	} else {
-		_, err = txProvider.tx.ExecContext(context, `
+		_, err = txProvider.tx.ExecContext(ctx, `
 			UPDATE user_host_requests SET status = $1 WHERE id = $2
 			`, model.UserHostRequestStatus_Rejected, request.RequestID)
 	}
 
+	// Commit the transaction
 	if err := txProvider.tx.Commit(); err != nil {
 		return err
 	}
-
-	txProvider.Close()
 
 	return nil
 }
