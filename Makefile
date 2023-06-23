@@ -3,6 +3,9 @@ DB_URL=postgresql://root:secret@localhost:5443/event_management_db?sslmode=disab
 postgres: 
 	docker run --name postgres -p 5443:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15-alpine
 
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7-alpine
+
 createdb:
 	docker exec -it postgres createdb --username=root --owner=root event_management_db
 
@@ -23,6 +26,7 @@ migratedown1:
 
 mock:
 	mockgen -package mockdb -destination db/mock/mockdb.go github.com/yashagw/event-management-api/db Provider
+	mockgen -package mockwk -destination worker/mock/distributor.go github.com/yashagw/event-management-api/worker TaskDistributor
 
 migratefile:
 	migrate create -ext sql -dir db/migration -seq db_seq

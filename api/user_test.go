@@ -19,6 +19,7 @@ import (
 	mockdb "github.com/yashagw/event-management-api/db/mock"
 	"github.com/yashagw/event-management-api/db/model"
 	"github.com/yashagw/event-management-api/util"
+	mockwk "github.com/yashagw/event-management-api/worker/mock"
 )
 
 type eqCreateUserParamsMatcher struct {
@@ -71,7 +72,7 @@ func TestLoginUserAPI(t *testing.T) {
 	testcases := []struct {
 		name          string
 		body          gin.H
-		buildStubs    func(provider *mockdb.MockProvider)
+		buildStubs    func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -80,7 +81,7 @@ func TestLoginUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().GetUserByEmail(gomock.Any(), user.Email).Times(1).Return(&user, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -93,7 +94,7 @@ func TestLoginUserAPI(t *testing.T) {
 				"email":    "invalid@gmail.com",
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().GetUserByEmail(gomock.Any(), "invalid@gmail.com").Times(1).Return(nil, sql.ErrNoRows)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -106,7 +107,7 @@ func TestLoginUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().GetUserByEmail(gomock.Any(), user.Email).Times(1).Return(nil, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -119,7 +120,7 @@ func TestLoginUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": "invalid1234",
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().GetUserByEmail(gomock.Any(), user.Email).Times(1).Return(&user, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -132,7 +133,7 @@ func TestLoginUserAPI(t *testing.T) {
 				"email":    "invalid",
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().GetUserByEmail(gomock.Any(), "invalid").Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -143,13 +144,17 @@ func TestLoginUserAPI(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 
-			provider := mockdb.NewMockProvider(ctrl)
-			tc.buildStubs(provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
 
-			server := newTestServer(t, provider)
+			tc.buildStubs(provider, distributor)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -170,7 +175,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testcases := []struct {
 		name          string
 		body          gin.H
-		buildStubs    func(provider *mockdb.MockProvider)
+		buildStubs    func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -180,14 +185,17 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				arg := model.CreateUserParams{
 					Name:  user.Name,
 					Email: user.Email,
 				}
 
-				provider.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).
-					Return(&user, nil)
+				provider.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
+					Times(1).Return(&user, nil)
+				worker.EXPECT().DistributeTaskSendEmailVerify(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(1).Return(nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
@@ -201,7 +209,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).
 					Return(nil, sql.ErrConnDone)
 			},
@@ -216,7 +224,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).
 					Return(nil, &pq.Error{Code: "23505"})
 			},
@@ -231,7 +239,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":    "invalid",
 				"password": password,
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -245,7 +253,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":    user.Email,
 				"password": "short",
 			},
-			buildStubs: func(provider *mockdb.MockProvider) {
+			buildStubs: func(provider *mockdb.MockProvider, worker *mockwk.MockTaskDistributor) {
 				provider.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -256,13 +264,17 @@ func TestCreateUserAPI(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 
-			provider := mockdb.NewMockProvider(ctrl)
-			tc.buildStubs(provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
 
-			server := newTestServer(t, provider)
+			tc.buildStubs(provider, distributor)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)

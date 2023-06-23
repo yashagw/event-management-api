@@ -17,6 +17,7 @@ import (
 	mockdb "github.com/yashagw/event-management-api/db/mock"
 	"github.com/yashagw/event-management-api/db/model"
 	"github.com/yashagw/event-management-api/token"
+	mockwk "github.com/yashagw/event-management-api/worker/mock"
 )
 
 func randomUserHostRequest(t *testing.T, user *model.User, status model.UserHostRequestStatus) model.UserHostRequest {
@@ -123,13 +124,16 @@ func TestApproveDisapproveUserHostRequest(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			provider := mockdb.NewMockProvider(ctrl)
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 			tc.buildStubs(provider)
 
-			server := newTestServer(t, provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -245,13 +249,16 @@ func TestListPendingUserHostRequests(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			provider := mockdb.NewMockProvider(ctrl)
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 			tc.buildStubs(provider)
 
-			server := newTestServer(t, provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			url := "/moderator/requests"
@@ -360,13 +367,16 @@ func TestBecomeHostRequest(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			provider := mockdb.NewMockProvider(ctrl)
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 			tc.buildStubs(provider)
 
-			server := newTestServer(t, provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			request, err := http.NewRequest(http.MethodPost, "/users/host", nil)

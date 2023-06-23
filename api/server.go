@@ -6,6 +6,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "github.com/yashagw/event-management-api/docs"
+	"github.com/yashagw/event-management-api/worker"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yashagw/event-management-api/db"
@@ -15,23 +16,25 @@ import (
 
 // Server will serve HTTP requests for our event service.
 type Server struct {
-	provider   db.Provider
-	config     util.Config
-	tokenMaker token.Maker
-	router     *gin.Engine
+	provider    db.Provider
+	config      util.Config
+	tokenMaker  token.Maker
+	router      *gin.Engine
+	distributor worker.TaskDistributor
 }
 
 // NewServer creates a new HTTP server and sets up routing.
-func NewServer(config util.Config, provider db.Provider) (*Server, error) {
+func NewServer(config util.Config, provider db.Provider, distributor worker.TaskDistributor) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 
 	server := &Server{
-		provider:   provider,
-		config:     config,
-		tokenMaker: tokenMaker,
+		provider:    provider,
+		config:      config,
+		tokenMaker:  tokenMaker,
+		distributor: distributor,
 	}
 
 	server.setupRouter()

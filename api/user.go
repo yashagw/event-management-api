@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
 	"github.com/yashagw/event-management-api/db/model"
 	"github.com/yashagw/event-management-api/util"
+	"github.com/yashagw/event-management-api/worker"
 )
 
 type UserResponse struct {
@@ -63,6 +65,19 @@ func (server *Server) CreateUser(context *gin.Context) {
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+
+	taskPayload := worker.PayloadSendEmailVerify{
+		Email: user.Email,
+	}
+	opts := []asynq.Option{
+		asynq.MaxRetry(3),
+		asynq.Timeout(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+	err = server.distributor.DistributeTaskSendEmailVerify(context, &taskPayload, opts...)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 
 	res := UserResponse{

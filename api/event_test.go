@@ -15,6 +15,7 @@ import (
 	mockdb "github.com/yashagw/event-management-api/db/mock"
 	"github.com/yashagw/event-management-api/db/model"
 	"github.com/yashagw/event-management-api/token"
+	mockwk "github.com/yashagw/event-management-api/worker/mock"
 )
 
 func TestCreateEvent(t *testing.T) {
@@ -63,13 +64,16 @@ func TestCreateEvent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			provider := mockdb.NewMockProvider(ctrl)
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 			tc.buildStubs(provider)
 
-			server := newTestServer(t, provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -145,13 +149,16 @@ func TestListEvents(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			provider := mockdb.NewMockProvider(ctrl)
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 			tc.buildStubs(provider)
 
-			server := newTestServer(t, provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			url := "/hosts/events"
@@ -219,13 +226,16 @@ func TestGetEvent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			provider := mockdb.NewMockProvider(ctrl)
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
 			tc.buildStubs(provider)
 
-			server := newTestServer(t, provider)
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/hosts/events/%d", tc.eventID)

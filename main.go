@@ -4,10 +4,20 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/hibiken/asynq"
 	"github.com/yashagw/event-management-api/api"
 	"github.com/yashagw/event-management-api/db"
 	"github.com/yashagw/event-management-api/util"
+	"github.com/yashagw/event-management-api/worker"
 )
+
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, provider db.Provider) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, provider)
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal("cannot start task processor:", err)
+	}
+}
 
 // @title     Event Mangement API
 // @version	  1.0
@@ -35,7 +45,13 @@ func main() {
 		log.Fatal("cannot create db provider:", err)
 	}
 
-	server, err := api.NewServer(config, provider)
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	go runTaskProcessor(redisOpt, provider)
+
+	server, err := api.NewServer(config, provider, taskDistributor)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
 	}
