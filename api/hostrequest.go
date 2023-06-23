@@ -10,6 +10,15 @@ import (
 	"github.com/yashagw/event-management-api/token"
 )
 
+// BecomeHost godoc
+// @Summary      Creates a new request to become host.
+// @Description  Creates a new request to become host.
+// @Tags         user
+// @Produce      json
+// @Success      200 {object} ResponseMessage "request to become host created"
+// @Failure      401 {object} ResponseMessage "Not Authorized"
+// @Router       /users/host [post]
+// @Security     Bearer
 func (server *Server) BecomeHost(context *gin.Context) {
 	// TODO: Delete old request for user if not approved after 30 days
 
@@ -20,7 +29,7 @@ func (server *Server) BecomeHost(context *gin.Context) {
 	user, err := server.provider.GetUserByEmail(context, userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+			context.JSON(http.StatusUnauthorized, ResponseMessage{Message: "Not Authorized"})
 			return
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -28,7 +37,7 @@ func (server *Server) BecomeHost(context *gin.Context) {
 	}
 
 	if user.Role != model.UserRole_User {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+		context.JSON(http.StatusUnauthorized, ResponseMessage{Message: "Not Authorized"})
 		return
 	}
 
@@ -46,7 +55,7 @@ func (server *Server) BecomeHost(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"message": "request to become host created"})
+	context.JSON(http.StatusOK, ResponseMessage{Message: "request to become host created"})
 }
 
 type ListPendingUserHostRequestsParams struct {
@@ -54,6 +63,17 @@ type ListPendingUserHostRequestsParams struct {
 	Offset int `form:"offset"`
 }
 
+// ListPendingUserHostRequests godoc
+// @Summary      Lists pending requests to become host.
+// @Description  Lists pending requests to become host.
+// @Tags         moderator
+// @Produce      json
+// @Param        limit query int true "Limit"
+// @Param        offset query int false "Offset"
+// @Success      200 {object} model.ListPendingRequestsResponse
+// @Failure      401 {object} ResponseMessage "Not Authorized"
+// @Router       /moderators/requests [get]
+// @Security     Bearer
 func (server *Server) ListPendingUserHostRequests(context *gin.Context) {
 	// Authorization to make sure payload have user role
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -62,7 +82,7 @@ func (server *Server) ListPendingUserHostRequests(context *gin.Context) {
 	user, err := server.provider.GetUserByEmail(context, userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+			context.JSON(http.StatusUnauthorized, ResponseMessage{Message: "Not Authorized"})
 			return
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -71,7 +91,7 @@ func (server *Server) ListPendingUserHostRequests(context *gin.Context) {
 
 	// Only admin and moderator can list pending requests
 	if user.Role == model.UserRole_User || user.Role == model.UserRole_Host {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+		context.JSON(http.StatusUnauthorized, ResponseMessage{Message: "Not Authorized"})
 		return
 	}
 
@@ -99,6 +119,16 @@ type ApproveDisapproveUserHostRequestParams struct {
 	RequestID int64 `json:"request_id"`
 }
 
+// ApproveDisapproveUserHostRequest godoc
+// @Summary      Approves or disapproves a request to become host.
+// @Description  Approves or disapproves a request to become host.
+// @Tags         moderator
+// @Produce      json
+// @Param        request body ApproveDisapproveUserHostRequestParams true "Request"
+// @Success      200 {object} ResponseMessage "request approved/disapproved"
+// @Failure      401 {object} ResponseMessage "Not Authorized"
+// @Router       /moderators/requests [post]
+// @Security     Bearer
 func (server *Server) ApproveDisapproveUserHostRequest(context *gin.Context) {
 	// Authorization to make sure payload have user role
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -107,7 +137,7 @@ func (server *Server) ApproveDisapproveUserHostRequest(context *gin.Context) {
 	user, err := server.provider.GetUserByEmail(context, userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+			context.JSON(http.StatusUnauthorized, ResponseMessage{Message: "Not Authorized"})
 			return
 		}
 		context.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -116,7 +146,7 @@ func (server *Server) ApproveDisapproveUserHostRequest(context *gin.Context) {
 
 	// Only admin and moderator can approve requests
 	if user.Role == model.UserRole_User || user.Role == model.UserRole_Host {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+		context.JSON(http.StatusUnauthorized, ResponseMessage{Message: "Not Authorized"})
 		return
 	}
 
@@ -137,5 +167,5 @@ func (server *Server) ApproveDisapproveUserHostRequest(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"message": "request processed"})
+	context.JSON(http.StatusOK, ResponseMessage{"request approved/disapproved"})
 }

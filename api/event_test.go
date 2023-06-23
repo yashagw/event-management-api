@@ -75,7 +75,7 @@ func TestCreateEvent(t *testing.T) {
 			data, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			request, err := http.NewRequest(http.MethodPost, "/host/events", bytes.NewReader(data))
+			request, err := http.NewRequest(http.MethodPost, "/hosts/events", bytes.NewReader(data))
 			require.NoError(t, err)
 
 			tc.setupAuth(t, request, server.tokenMaker)
@@ -154,7 +154,7 @@ func TestListEvents(t *testing.T) {
 			server := newTestServer(t, provider)
 			recorder := httptest.NewRecorder()
 
-			url := "/host/events"
+			url := "/hosts/events"
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
@@ -228,7 +228,7 @@ func TestGetEvent(t *testing.T) {
 			server := newTestServer(t, provider)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/host/events/%d", tc.eventID)
+			url := fmt.Sprintf("/hosts/events/%d", tc.eventID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 

@@ -13,6 +13,15 @@ type CreateTicketParams struct {
 	Quantity int64 `json:"quantity"`
 }
 
+// CreateTicket  godoc
+// @Summary      Buys ticket for an event.
+// @Description  Buys ticket for an event.
+// @Tags         user
+// @Produce      json
+// @Param        ticket body CreateTicketParams true "Ticket"
+// @Success      201 {object} model.Ticket
+// @Router       /users/ticket [post]
+// @Security     Bearer
 func (server *Server) CreateTicket(context *gin.Context) {
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 	userEmail := payload.Username

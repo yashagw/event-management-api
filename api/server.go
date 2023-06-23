@@ -3,6 +3,10 @@ package api
 import (
 	"fmt"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/yashagw/event-management-api/docs"
+
 	"github.com/gin-gonic/gin"
 	"github.com/yashagw/event-management-api/db"
 	"github.com/yashagw/event-management-api/token"
@@ -37,6 +41,8 @@ func NewServer(config util.Config, provider db.Provider) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	router.POST("/users", server.CreateUser)
 	router.POST("/users/login", server.LoginUser)
 
@@ -49,9 +55,9 @@ func (server *Server) setupRouter() {
 	moderatorAuthRoutes.POST("/moderator/requests/", server.ApproveDisapproveUserHostRequest)
 
 	hostAuthRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
-	hostAuthRoutes.POST("/host/events", server.CreateEvent)
-	hostAuthRoutes.GET("/host/events", server.ListEvents)
-	hostAuthRoutes.GET("/host/events/:event_id", server.GetEvent)
+	hostAuthRoutes.POST("/hosts/events", server.CreateEvent)
+	hostAuthRoutes.GET("/hosts/events", server.ListEvents)
+	hostAuthRoutes.GET("/hosts/events/:event_id", server.GetEvent)
 
 	server.router = router
 }

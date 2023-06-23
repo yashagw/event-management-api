@@ -1,0 +1,384 @@
+definitions:
+  api.ApproveDisapproveUserHostRequestParams:
+    properties:
+      approved:
+        type: boolean
+      request_id:
+        type: integer
+    type: object
+  api.CreateEventParams:
+    properties:
+      description:
+        type: string
+      end_date:
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      start_date:
+        type: string
+      total_tickets:
+        type: integer
+    type: object
+  api.CreateTicketParams:
+    properties:
+      event_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  api.CreateUserParams:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  api.LoginUserParams:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  api.LoginUserResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/api.UserResponse'
+    type: object
+  api.ResponseMessage:
+    properties:
+      message:
+        type: string
+    type: object
+  api.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password_updated_at:
+        type: string
+    type: object
+  model.Event:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      host_id:
+        type: integer
+      id:
+        type: integer
+      left_tickets:
+        type: integer
+      location:
+        type: string
+      name:
+        type: string
+      start_date:
+        type: string
+      total_tickets:
+        type: integer
+    type: object
+  model.ListEventsResponse:
+    properties:
+      next_offset:
+        type: integer
+      records:
+        items:
+          $ref: '#/definitions/model.Event'
+        type: array
+    type: object
+  model.ListPendingRequestsResponse:
+    properties:
+      next_offset:
+        type: integer
+      records:
+        items:
+          $ref: '#/definitions/model.UserHostRequest'
+        type: array
+    type: object
+  model.Ticket:
+    properties:
+      created_at:
+        type: string
+      event_id:
+        type: integer
+      id:
+        type: integer
+      quantity:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  model.UserHostRequest:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      moderator_id:
+        $ref: '#/definitions/sql.NullInt64'
+      status:
+        $ref: '#/definitions/model.UserHostRequestStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.UserHostRequestStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - UserHostRequestStatus_Pending
+    - UserHostRequestStatus_Rejected
+    - UserHostRequestStatus_Approved
+  sql.NullInt64:
+    properties:
+      int64:
+        type: integer
+      valid:
+        description: Valid is true if Int64 is not NULL
+        type: boolean
+    type: object
+info:
+  contact:
+    email: yash.ag@outlook.com
+    name: Yash Agarwal
+  description: API server for event management system.
+  title: Event Mangement API
+  version: "1.0"
+paths:
+  /hosts/events:
+    get:
+      description: Lists events created by the host.
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ListEventsResponse'
+      security:
+      - Bearer: []
+      summary: Lists events created by the host.
+      tags:
+      - host
+    post:
+      description: Creates a new event.
+      parameters:
+      - description: Event
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateEventParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Event'
+      security:
+      - Bearer: []
+      summary: Creates a new event.
+      tags:
+      - host
+  /hosts/events/{event_id}:
+    get:
+      description: Get event info created by the host.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Event'
+      security:
+      - Bearer: []
+      summary: Get event info created by the host.
+      tags:
+      - host
+  /moderators/requests:
+    get:
+      description: Lists pending requests to become host.
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ListPendingRequestsResponse'
+        "401":
+          description: Not Authorized
+          schema:
+            $ref: '#/definitions/api.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Lists pending requests to become host.
+      tags:
+      - moderator
+    post:
+      description: Approves or disapproves a request to become host.
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ApproveDisapproveUserHostRequestParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: request approved/disapproved
+          schema:
+            $ref: '#/definitions/api.ResponseMessage'
+        "401":
+          description: Not Authorized
+          schema:
+            $ref: '#/definitions/api.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Approves or disapproves a request to become host.
+      tags:
+      - moderator
+  /users:
+    post:
+      description: Creates a new user.
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateUserParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.UserResponse'
+      summary: Creates a new user.
+      tags:
+      - user
+  /users/host:
+    post:
+      description: Creates a new request to become host.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: request to become host created
+          schema:
+            $ref: '#/definitions/api.ResponseMessage'
+        "401":
+          description: Not Authorized
+          schema:
+            $ref: '#/definitions/api.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Creates a new request to become host.
+      tags:
+      - user
+  /users/login:
+    post:
+      description: Logs in a user.
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginUserParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.LoginUserResponse'
+      summary: Logs in a user.
+      tags:
+      - user
+  /users/ticket:
+    post:
+      description: Buys ticket for an event.
+      parameters:
+      - description: Ticket
+        in: body
+        name: ticket
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateTicketParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Ticket'
+      security:
+      - Bearer: []
+      summary: Buys ticket for an event.
+      tags:
+      - user
+securityDefinitions:
+  Bearer:
+    description: Type "bearer" followed by a space and JWT token.
+    in: header
+    name: authorization
+    type: apiKey
+swagger: "2.0"

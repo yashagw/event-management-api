@@ -19,6 +19,15 @@ type CreateEventParams struct {
 	EndDate      time.Time `json:"end_date"`
 }
 
+// CreateEvent   godoc
+// @Summary      Creates a new event.
+// @Description  Creates a new event.
+// @Tags         host
+// @Produce      json
+// @Param        event body CreateEventParams true "Event"
+// @Success      201 {object} model.Event
+// @Router       /hosts/events [post]
+// @Security     Bearer
 func (server *Server) CreateEvent(context *gin.Context) {
 	// Authorization to make sure payload have user role
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -70,6 +79,16 @@ type ListEventsParams struct {
 	Offset int `form:"offset"`
 }
 
+// ListEvents   godoc
+// @Summary      Lists events created by the host.
+// @Description  Lists events created by the host.
+// @Tags         host
+// @Produce      json
+// @Param        limit query int true "Limit"
+// @Param        offset query int false "Offset"
+// @Success      200 {object} model.ListEventsResponse
+// @Router       /hosts/events [get]
+// @Security     Bearer
 func (server *Server) ListEvents(context *gin.Context) {
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 	userEmail := payload.Username
@@ -113,6 +132,15 @@ type GetEventParams struct {
 	EventID int64 `uri:"event_id" binding:"required"`
 }
 
+// GetEvent   godoc
+// @Summary      Get event info created by the host.
+// @Description  Get event info created by the host.
+// @Tags         host
+// @Produce      json
+// @Param        event_id path int true "Event ID"
+// @Success      200 {object} model.Event
+// @Router       /hosts/events/{event_id} [get]
+// @Security     Bearer
 func (server *Server) GetEvent(context *gin.Context) {
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 	userEmail := payload.Username

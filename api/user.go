@@ -26,7 +26,14 @@ type CreateUserParams struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-// CreateUser represents create user api endpoint
+// CreateUser             godoc
+// @Summary      Creates a new user.
+// @Description  Creates a new user.
+// @Tags         user
+// @Produce      json
+// @Param        user body CreateUserParams true "User"
+// @Success      201 {object} UserResponse
+// @Router       /users [post]
 func (server *Server) CreateUser(context *gin.Context) {
 	var req CreateUserParams
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -81,7 +88,14 @@ type LoginUserResponse struct {
 	User  UserResponse `json:"user"`
 }
 
-// LoginUser represents login user api endpoint
+// LoginUser              godoc
+// @Summary      Logs in a user.
+// @Description  Logs in a user.
+// @Tags         user
+// @Produce      json
+// @Param        user body LoginUserParams true "User"
+// @Success      200 {object} LoginUserResponse
+// @Router       /users/login [post]
 func (server *Server) LoginUser(context *gin.Context) {
 	var req LoginUserParams
 	if err := context.ShouldBindJSON(&req); err != nil {
