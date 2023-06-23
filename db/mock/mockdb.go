@@ -64,6 +64,21 @@ func (mr *MockProviderMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockProvider)(nil).Close))
 }
 
+// CreateEvent mocks base method.
+func (m *MockProvider) CreateEvent(arg0 context.Context, arg1 model.CreateEventParams) (*model.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateEvent", arg0, arg1)
+	ret0, _ := ret[0].(*model.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateEvent indicates an expected call of CreateEvent.
+func (mr *MockProviderMockRecorder) CreateEvent(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEvent", reflect.TypeOf((*MockProvider)(nil).CreateEvent), arg0, arg1)
+}
+
 // CreateRequestToBecomeHost mocks base method.
 func (m *MockProvider) CreateRequestToBecomeHost(arg0 context.Context, arg1 int64) (*model.UserHostRequest, error) {
 	m.ctrl.T.Helper()
@@ -108,6 +123,20 @@ func (mr *MockProviderMockRecorder) DB() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DB", reflect.TypeOf((*MockProvider)(nil).DB))
 }
 
+// DeleteEvent mocks base method.
+func (m *MockProvider) DeleteEvent(arg0 context.Context, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteEvent", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteEvent indicates an expected call of DeleteEvent.
+func (mr *MockProviderMockRecorder) DeleteEvent(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEvent", reflect.TypeOf((*MockProvider)(nil).DeleteEvent), arg0, arg1)
+}
+
 // DeleteRequestToBecomeHost mocks base method.
 func (m *MockProvider) DeleteRequestToBecomeHost(arg0 context.Context, arg1 int64) error {
 	m.ctrl.T.Helper()
@@ -134,6 +163,21 @@ func (m *MockProvider) DeleteUser(arg0 context.Context, arg1 int64) error {
 func (mr *MockProviderMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockProvider)(nil).DeleteUser), arg0, arg1)
+}
+
+// GetEvent mocks base method.
+func (m *MockProvider) GetEvent(arg0 context.Context, arg1 model.GetEventParams) (*model.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEvent", arg0, arg1)
+	ret0, _ := ret[0].(*model.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEvent indicates an expected call of GetEvent.
+func (mr *MockProviderMockRecorder) GetEvent(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvent", reflect.TypeOf((*MockProvider)(nil).GetEvent), arg0, arg1)
 }
 
 // GetRequestToBecomeHost mocks base method.
@@ -164,6 +208,21 @@ func (m *MockProvider) GetUserByEmail(arg0 context.Context, arg1 string) (*model
 func (mr *MockProviderMockRecorder) GetUserByEmail(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockProvider)(nil).GetUserByEmail), arg0, arg1)
+}
+
+// ListEvents mocks base method.
+func (m *MockProvider) ListEvents(arg0 context.Context, arg1 model.ListEventsParams) (*model.ListEventsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListEvents", arg0, arg1)
+	ret0, _ := ret[0].(*model.ListEventsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListEvents indicates an expected call of ListEvents.
+func (mr *MockProviderMockRecorder) ListEvents(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEvents", reflect.TypeOf((*MockProvider)(nil).ListEvents), arg0, arg1)
 }
 
 // ListPendingRequests mocks base method.

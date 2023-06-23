@@ -20,6 +20,10 @@ type UserQuerier interface {
 }
 
 type EventQuerier interface {
+	CreateEvent(context context.Context, request model.CreateEventParams) (*model.Event, error)
+	GetEvent(context context.Context, request model.GetEventParams) (*model.Event, error)
+	ListEvents(context context.Context, request model.ListEventsParams) (*model.ListEventsResponse, error)
+	DeleteEvent(context context.Context, id int64) error
 }
 
 type DBQuerier interface {

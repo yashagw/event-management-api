@@ -9,7 +9,7 @@ import (
 
 func (p *Provider) ListPendingRequests(context context.Context, req model.ListPendingRequestsParams) (*model.ListPendingRequestsResponse, error) {
 	if req.Limit == 0 {
-		req.Limit = 10
+		req.Limit = 1
 	}
 
 	rows, err := p.conn.QueryContext(context, `

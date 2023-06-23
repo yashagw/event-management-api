@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS "events" (
   "end_date" timestamp NOT NULL,
   "total_tickets" int NOT NULL,
   "left_tickets" int NOT NULL,
-  "status" int NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
