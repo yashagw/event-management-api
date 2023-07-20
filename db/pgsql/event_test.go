@@ -51,7 +51,6 @@ func TestCreateEvent(t *testing.T) {
 
 	fetchedEvent, err := provider.GetEvent(context.Background(), model.GetEventParams{
 		EventID: event.ID,
-		HostID:  host.ID,
 	})
 	require.NoError(t, err)
 	require.Equal(t, event, fetchedEvent)
@@ -75,7 +74,6 @@ func TestDeleteEvent(t *testing.T) {
 	// Fetch the event from the database
 	_, err = provider.GetEvent(context.Background(), model.GetEventParams{
 		EventID: event.ID,
-		HostID:  host.ID,
 	})
 	require.Error(t, err)
 }

@@ -133,34 +133,13 @@ type GetEventParams struct {
 }
 
 // GetEvent   godoc
-// @Summary      Get event info created by the host.
-// @Description  Get event info created by the host.
-// @Tags         host
+// @Summary      Get event info
+// @Description  Get event info
 // @Produce      json
 // @Param        event_id path int true "Event ID"
 // @Success      200 {object} model.Event
 // @Router       /hosts/events/{event_id} [get]
-// @Security     Bearer
 func (server *Server) GetEvent(context *gin.Context) {
-	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
-	userEmail := payload.Username
-
-	user, err := server.provider.GetUserByEmail(context, userEmail)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
-			return
-		}
-		context.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	// Only host can get event
-	if user.Role != model.UserRole_Host {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
-		return
-	}
-
 	var params GetEventParams
 	if err := context.ShouldBindUri(&params); err != nil {
 		context.JSON(http.StatusBadRequest, errorResponse(err))
@@ -168,7 +147,6 @@ func (server *Server) GetEvent(context *gin.Context) {
 	}
 
 	event, err := server.provider.GetEvent(context, model.GetEventParams{
-		HostID:  user.ID,
 		EventID: params.EventID,
 	})
 	if err != nil {

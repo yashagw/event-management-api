@@ -178,48 +178,23 @@ func TestListEvents(t *testing.T) {
 }
 
 func TestGetEvent(t *testing.T) {
-	host, _ := randomUser(t)
-	host.Role = model.UserRole_Host
-
-	user, _ := randomUser(t)
-
 	testCases := []struct {
 		name          string
 		eventID       int
-		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(provider *mockdb.MockProvider)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:    "OK",
 			eventID: 1,
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, host.Email, time.Minute)
-			},
 			buildStubs: func(provider *mockdb.MockProvider) {
 				arg := model.GetEventParams{
 					EventID: 1,
-					HostID:  host.ID,
 				}
-
-				provider.EXPECT().GetUserByEmail(gomock.Any(), host.Email).Times(1).Return(&host, nil)
 				provider.EXPECT().GetEvent(gomock.Any(), gomock.Eq(arg)).Times(1).Return(&model.Event{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-			},
-		},
-		{
-			name:    "Unauthorized",
-			eventID: 1,
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
-			},
-			buildStubs: func(provider *mockdb.MockProvider) {
-				provider.EXPECT().GetUserByEmail(gomock.Any(), user.Email).Times(1).Return(&user, nil)
-			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 	}
@@ -238,11 +213,10 @@ func TestGetEvent(t *testing.T) {
 			server := newTestServer(t, provider, distributor)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/hosts/events/%d", tc.eventID)
+			url := fmt.Sprintf("/events/%d", tc.eventID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})

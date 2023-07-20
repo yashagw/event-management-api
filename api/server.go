@@ -46,6 +46,8 @@ func (server *Server) setupRouter() {
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	router.GET("/events/:event_id", server.GetEvent)
+
 	router.POST("/users", server.CreateUser)
 	router.POST("/users/login", server.LoginUser)
 
@@ -60,7 +62,6 @@ func (server *Server) setupRouter() {
 	hostAuthRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	hostAuthRoutes.POST("/hosts/events", server.CreateEvent)
 	hostAuthRoutes.GET("/hosts/events", server.ListEvents)
-	hostAuthRoutes.GET("/hosts/events/:event_id", server.GetEvent)
 
 	server.router = router
 }

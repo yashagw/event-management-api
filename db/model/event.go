@@ -27,7 +27,6 @@ type CreateEventParams struct {
 }
 
 type GetEventParams struct {
-	HostID  int64 `json:"host_id"`
 	EventID int64 `json:"event_id"`
 }
 

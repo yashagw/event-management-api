@@ -36,8 +36,8 @@ func (provider *Provider) GetEvent(context context.Context, request model.GetEve
 	err := provider.conn.QueryRowContext(context, `
 		SELECT id, host_id, name, description, location, total_tickets, left_tickets, start_date, end_date, created_at
 		FROM events
-		WHERE id = $1 AND host_id = $2
-	`, request.EventID, request.HostID).Scan(
+		WHERE id = $1
+	`, request.EventID).Scan(
 		&event.ID,
 		&event.HostID,
 		&event.Name,
