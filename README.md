@@ -8,7 +8,9 @@ The Event Management API is a comprehensive solution for managing events, ticket
 
 As a Guest, users have limited access to the system. They can perform the following actions:
 
-- **List Events (GET):** Retrieve a list of events with pagination and sorting options.
+- **✅ View Event (GET):** Retrieve detailed information about a specific event, including name, description, location, date, ticket availability, etc.
+
+- **⏳ List Events (GET):** Retrieve a list of events with pagination and sorting options.
   - Filtering options:
     - Status: Ongoing, Upcoming, or Past events.
     - Duration: Events of a specific duration (e.g., 1-day, 2-day, etc.).
@@ -17,58 +19,56 @@ As a Guest, users have limited access to the system. They can perform the follow
     - Month and City: Events in a particular city during a specific month.
     - Minimum Tickets: Events with at least a certain number of tickets left.
 
-- **Search Events (GET):** Search for events by name, description, or location.
-
-- **View Event (GET):** Retrieve detailed information about a specific event, including name, description, location, date, ticket availability, etc.
+- **⏳ Search Events (GET):** Search for events by name, description, or location.
 
 ### User Role
 
 In addition to the actions available to Guests, Users have additional functionalities:
 
-- **Buy Tickets (POST):** Purchase tickets for an event. Users can buy multiple tickets at once, but they cannot buy tickets for ongoing events.
+- **✅ Buy Tickets (POST):** Purchase tickets for an event. Users can buy multiple tickets at once, but they cannot buy tickets for ongoing events.
+  
+- **✅ Request to Become a Host (POST):** Users can request to become a host. If the request is denied, the user will not be able to request again for 30 days.
 
-- **View Bought Tickets (GET):** Retrieve a list of all purchased tickets with pagination and sorting options.
+- **⏳ View Bought Tickets (GET):** Retrieve a list of all purchased tickets with pagination and sorting options.
 
-- **Search Tickets (GET):** Search for tickets by event name or location.
-
-- **Request to Become a Host (POST):** Users can request to become a host. If the request is denied, the user will not be able to request again for 30 days.
+- **⏳ Search Bought Tickets (GET):** Search for tickets by event name or location.
 
 ### Host Role
 
 As Hosts, users have additional privileges on top of User actions:
 
-- **All User Role actions** are available to Hosts.
+- **✅ All User Role actions** are available to Hosts.
 
-- **Create Event (POST):** Create a new event with details such as name, description, location, date, etc.
+- **✅ Create Event (POST):** Create a new event with details such as name, description, location, date, etc.
 
-- **Update Event (PUT):** Update event information, including description (at any time) and name, location, date, etc. (only if no tickets have been sold).
-
-- **Delete Event (DELETE):** Delete an event from the system, but only if no tickets have been sold.
-
-- **View Created Events (GET):** Retrieve a list of all events created by the host with pagination and sorting options.
-  - Filtering options:
+- **✅ List Created Events (GET):** Retrieve a list of all events created by the host with pagination and sorting options.
+  - ⏳ Filtering options:
     - Location and Date: Events in a specific location and date range.
     - Status: Ongoing or not ongoing events.
+      
+- **⏳ Update Event (PUT):** Update event information, including description (at any time) and name, location, date, etc. (only if no tickets have been sold).
 
-- **Search Events (GET):** Search for events by name, description, location, date, etc.
+- **⏳ Delete Event (DELETE):** Delete an event from the system, but only if no tickets have been sold.
 
-- **View Tickets Sold for an Event (GET):** Retrieve a list of all tickets sold for a specific event with pagination and sorting options.
+- **⏳ Search Events (GET):** Search for events by name, description, location, date, etc.
+
+- **⏳ View Tickets Sold for an Event (GET):** Retrieve a list of all tickets sold for a specific event with pagination and sorting options.
 
 ### Moderator Role
 
 Moderators have the following actions available to them:
 
-- **View Requests to Become a Host (GET):** Retrieve a list of host requests with pagination and sorting options.
+- **✅ View Requests to Become a Host (GET):** Retrieve a list of host requests with pagination and sorting options.
 
-- **Approve or Reject a Host Request (PUT):** Moderators can review and approve or reject host requests.
+- **✅ Approve or Reject a Host Request (PUT):** Moderators can review and approve or reject host requests.
 
 ### Admin Role
 
 Administrators have additional privileges and can perform the following actions:
 
-- **All Moderator Role actions** are available to Administrators.
+- **✅ All Moderator Role actions** are available to Administrators.
 
-- **Create Moderator (POST):** Create a new moderator account.
+- **⏳ Create Moderator (POST):** Create a new moderator account.
 
 ## Database Structure
 
@@ -81,14 +81,6 @@ The following tables are used in the database:
 - **Tickets:** Stores ticket information including id, user_id, event_id, quantity, and created_at.
 
 - **User_Host_Request:** Manages user requests to become a host with fields such as id, user_id (foreign key to users table), moderator_id (foreign key to users table), status, and created_at.
-
-## Host Request Assignment
-
-To assign a host request to a moderator, the following approach is used:
-
-- Assign the host request to the moderator with the least number of host requests assigned.
-
-- Determine the moderator with the least number of host requests by finding all host requests with the status "IN REVIEW" and then identifying the moderator_id with the minimum count of host requests assigned.
 
 ---
 
