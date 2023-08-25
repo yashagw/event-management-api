@@ -80,6 +80,34 @@ type ListEventsParams struct {
 }
 
 // ListEvents   godoc
+// @Summary      Lists all events.
+// @Description  Lists all events.
+// @Produce      json
+func (server *Server) ListEvents(context *gin.Context) {
+	var params ListEventsParams
+	if err := context.ShouldBindQuery(&params); err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	events, err := server.provider.ListEvents(context, model.ListEventsParams{
+		Limit:  params.Limit,
+		Offset: params.Offset,
+	})
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	context.JSON(http.StatusOK, events)
+}
+
+type ListHostEventsParams struct {
+	Limit  int `form:"limit" binding:"required,min=1,max=1000"`
+	Offset int `form:"offset"`
+}
+
+// ListHostEvents   godoc
 // @Summary      Lists events created by the host.
 // @Description  Lists events created by the host.
 // @Tags         host
@@ -89,7 +117,7 @@ type ListEventsParams struct {
 // @Success      200 {object} model.ListEventsResponse
 // @Router       /hosts/events [get]
 // @Security     Bearer
-func (server *Server) ListEvents(context *gin.Context) {
+func (server *Server) ListHostEvents(context *gin.Context) {
 	payload := context.MustGet(authorizationPayloadKey).(*token.Payload)
 	userEmail := payload.Username
 
@@ -109,7 +137,7 @@ func (server *Server) ListEvents(context *gin.Context) {
 		return
 	}
 
-	var params ListEventsParams
+	var params ListHostEventsParams
 	if err := context.ShouldBindQuery(&params); err != nil {
 		context.JSON(http.StatusBadRequest, errorResponse(err))
 		return

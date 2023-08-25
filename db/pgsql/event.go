@@ -2,6 +2,8 @@ package pgsql
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/yashagw/event-management-api/db/model"
 )
@@ -58,16 +60,32 @@ func (provider *Provider) GetEvent(context context.Context, request model.GetEve
 
 func (provider *Provider) ListEvents(context context.Context, request model.ListEventsParams) (*model.ListEventsResponse, error) {
 	if request.Limit <= 0 {
-		request.Limit = 1
+		request.Limit = 100
 	}
 
-	rows, err := provider.conn.QueryContext(context, `
-		SELECT id, host_id, name, description, location, total_tickets, left_tickets, start_date, end_date, created_at
-		FROM events
-		WHERE host_id = $1
-		LIMIT $2
-		OFFSET $3
-	`, request.HostID, request.Limit, request.Offset)
+	baseQuery := "SELECT id, host_id, name, description, location, total_tickets, left_tickets, start_date, end_date, created_at FROM events"
+
+	var filters []string
+	args := make([]interface{}, 0)
+
+	if request.HostID != 0 {
+		filters = append(filters, "host_id = $"+fmt.Sprint(len(args)+3))
+		args = append(args, request.HostID)
+	}
+
+	var whereClause string
+	if len(filters) > 0 {
+		whereClause = "WHERE " + strings.Join(filters, " AND ")
+	}
+
+	// Construct the final query
+	finalQuery := baseQuery + " " + whereClause + " LIMIT $1 OFFSET $2"
+
+	// Combine query arguments
+	queryArgs := append([]interface{}{request.Limit, request.Offset}, args...)
+
+	// Execute the query
+	rows, err := provider.conn.QueryContext(context, finalQuery, queryArgs...)
 	if err != nil {
 		return nil, err
 	}

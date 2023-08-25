@@ -46,6 +46,7 @@ func (server *Server) setupRouter() {
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	router.GET("/events", server.ListEvents)
 	router.GET("/events/:event_id", server.GetEvent)
 
 	router.POST("/users", server.CreateUser)
@@ -57,11 +58,11 @@ func (server *Server) setupRouter() {
 
 	moderatorAuthRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	moderatorAuthRoutes.GET("/moderator/requests", server.ListPendingUserHostRequests)
-	moderatorAuthRoutes.POST("/moderator/requests/", server.ApproveDisapproveUserHostRequest)
+	moderatorAuthRoutes.POST("/moderator/requests", server.ApproveDisapproveUserHostRequest)
 
 	hostAuthRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	hostAuthRoutes.POST("/hosts/events", server.CreateEvent)
-	hostAuthRoutes.GET("/hosts/events", server.ListEvents)
+	hostAuthRoutes.GET("/hosts/events", server.ListHostEvents)
 
 	server.router = router
 }

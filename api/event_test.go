@@ -89,7 +89,7 @@ func TestCreateEvent(t *testing.T) {
 	}
 }
 
-func TestListEvents(t *testing.T) {
+func TestListHostEvents(t *testing.T) {
 	host, _ := randomUser(t)
 	host.Role = model.UserRole_Host
 
@@ -171,6 +171,66 @@ func TestListEvents(t *testing.T) {
 			request.URL.RawQuery = q.Encode()
 
 			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
+}
+
+func TestListEvents(t *testing.T) {
+	type Query struct {
+		Limit  int
+		Offset int
+	}
+
+	testCases := []struct {
+		name          string
+		query         Query
+		buildStubs    func(provider *mockdb.MockProvider)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			query: Query{
+				Limit:  10,
+				Offset: 0,
+			},
+			buildStubs: func(provider *mockdb.MockProvider) {
+				arg := model.ListEventsParams{
+					Limit:  10,
+					Offset: 0,
+				}
+				provider.EXPECT().ListEvents(gomock.Any(), gomock.Eq(arg)).Times(1).Return(&model.ListEventsResponse{}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			providerCtrl := gomock.NewController(t)
+			defer providerCtrl.Finish()
+			provider := mockdb.NewMockProvider(providerCtrl)
+			tc.buildStubs(provider)
+
+			redisCtrl := gomock.NewController(t)
+			defer redisCtrl.Finish()
+			distributor := mockwk.NewMockTaskDistributor(redisCtrl)
+
+			server := newTestServer(t, provider, distributor)
+			recorder := httptest.NewRecorder()
+
+			url := "/events"
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			q := request.URL.Query()
+			q.Add("limit", fmt.Sprintf("%d", tc.query.Limit))
+			q.Add("offset", fmt.Sprintf("%d", tc.query.Offset))
+			request.URL.RawQuery = q.Encode()
+
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})

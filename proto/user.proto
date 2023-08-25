@@ -1,0 +1,33 @@
+syntax = "proto3";
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/yashagw/event-management-api/pb";
+
+// Enum to represent user roles
+enum UserRole {
+    UserRole_User = 0;
+    UserRole_Host = 1;
+    UserRole_Moderator = 2;
+    UserRole_Admin = 3;
+}
+  
+// User represents a user in the database
+message User {
+    int64 ID = 1;
+    string Name = 2;
+    string Email = 3;
+    string HashedPassword = 4;
+    UserRole Role = 5;
+    google.protobuf.Timestamp CreatedAt = 6;
+    google.protobuf.Timestamp PasswordUpdatedAt = 7;
+}
+
+message UserResponse {
+    string Name = 1;
+    string Email = 2;
+    UserRole Role = 3;
+    google.protobuf.Timestamp CreatedAt = 4;
+    google.protobuf.Timestamp PasswordUpdatedAt = 5;
+}

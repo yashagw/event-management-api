@@ -1,0 +1,21 @@
+syntax = "proto3";
+package pb;
+
+import "user.proto";
+
+option go_package = "github.com/yashagw/event-management-api/pb";
+
+
+// CreateUserRequest is the request to create a new user
+message LoginUserRequest {
+    string name = 1;
+    string email = 2;
+    string password = 3;
+}
+
+// CreateUserResponse is the response to create a new user
+message LoginUserResponse {
+    string token = 1;
+    UserResponse user = 2;
+}
+

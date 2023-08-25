@@ -139,7 +139,7 @@ func TestApproveDisapproveUserHostRequest(t *testing.T) {
 			data, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			request, err := http.NewRequest(http.MethodPost, "/moderator/requests/", bytes.NewReader(data))
+			request, err := http.NewRequest(http.MethodPost, "/moderator/requests", bytes.NewReader(data))
 			require.NoError(t, err)
 
 			tc.setupAuth(t, request, server.tokenMaker)

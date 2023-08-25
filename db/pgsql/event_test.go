@@ -85,7 +85,13 @@ func TestListEvents(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	// Create 10 random events
+	user2 := CreateRandomUser(t)
+	defer func() {
+		err := provider.DeleteUser(context.Background(), user2.ID)
+		require.NoError(t, err)
+	}()
+
+	// Create 10 random events for user
 	for i := 0; i < 10; i++ {
 		event := CreateRandomEvent(t, user)
 		defer func() {
@@ -94,7 +100,16 @@ func TestListEvents(t *testing.T) {
 		}()
 	}
 
-	// List the events
+	// Create 10 random events for user2
+	for i := 0; i < 10; i++ {
+		event := CreateRandomEvent(t, user2)
+		defer func() {
+			err := provider.DeleteEvent(context.Background(), event.ID)
+			require.NoError(t, err)
+		}()
+	}
+
+	// List the events filter by host_id
 	response, err := provider.ListEvents(context.Background(), model.ListEventsParams{
 		HostID: user.ID,
 		Limit:  10,
@@ -102,4 +117,9 @@ func TestListEvents(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, 10, len(response.Records))
+
+	// List all events
+	response, err = provider.ListEvents(context.Background(), model.ListEventsParams{})
+	require.NoError(t, err)
+	require.Equal(t, 20, len(response.Records))
 }

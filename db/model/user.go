@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/yashagw/event-management-api/pb"
 )
 
 type UserRole int
@@ -36,6 +38,22 @@ func (es *UserRole) Scan(value interface{}) error {
 // It is used by the sql package to convert a UserRole into a value that can be stored in the database
 func (es UserRole) Value() (driver.Value, error) {
 	return int64(es), nil
+}
+
+// Convert model.UserRole to pb.UserRole
+func (role UserRole) ToProto() pb.UserRole {
+	switch role {
+	case UserRole_User:
+		return pb.UserRole_UserRole_User
+	case UserRole_Host:
+		return pb.UserRole_UserRole_Host
+	case UserRole_Moderator:
+		return pb.UserRole_UserRole_Moderator
+	case UserRole_Admin:
+		return pb.UserRole_UserRole_Admin
+	default:
+		return pb.UserRole_UserRole_User
+	}
 }
 
 // User represents a user in the database

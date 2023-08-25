@@ -10,8 +10,8 @@ As a Guest, users have limited access to the system. They can perform the follow
 
 - **✅ View Event (GET):** Retrieve detailed information about a specific event, including name, description, location, date, ticket availability, etc.
 
-- **⏳ List Events (GET):** Retrieve a list of events with pagination and sorting options.
-  - Filtering options:
+- **✅ List Events (GET):** Retrieve a list of events with pagination and sorting options.
+  - ⏳Filtering options:
     - Status: Ongoing, Upcoming, or Past events.
     - Duration: Events of a specific duration (e.g., 1-day, 2-day, etc.).
     - Month: Events occurring in a particular month.
